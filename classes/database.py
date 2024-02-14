@@ -19,7 +19,7 @@ def setup(file: str = "data.db"):
                   FOREIGN KEY(user_id) REFERENCES users(user_id))")
         c.execute("CREATE TABLE IF NOT EXISTS shops (shop_id INTEGER PRIMARY KEY,\
                   owners TEXT, name TEXT, offer TEXT, location TEXT,\
-                  category TEXT, approved BOOLEAN, message_id BIGINT, obligatory BOOLEAN)")
+                  category TEXT, approved BOOLEAN, message_id BIGINT, obligatory INTEGER)")
         conn.commit()
 
 
