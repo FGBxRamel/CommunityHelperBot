@@ -100,7 +100,7 @@ async def automatic_delete(oneshot: bool = False) -> None:
 
     await clean_offers(current_time)
     await clean_votings(current_time)
-    await clean_vactions(current_time)
+    await clean_vactions()
 
 
 def run_delete(oneshot: bool = False):
