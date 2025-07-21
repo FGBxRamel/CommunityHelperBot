@@ -50,19 +50,19 @@ async def automatic_delete(oneshot: bool = False) -> None:
 
     async def clean_offers(current_time):
         offer_channel: i.GuildText = await bot.fetch_channel(offer_channel_id)
-        if type(offer_channel) is None:
+        if offer_channel is None:
             print("The offer channel has not been found! Please check the config!")
             return
         offers = db.get_data(
             "offers", attribute="deadline, message_id, offer_id, user_id", fetch_all=True)
         for deadline, message_id, offer_id, user_id in offers:
             if deadline <= current_time:
-                message = await offer_channel.fetch_message(message_id)
-                if type(message) is not None:
-                    try:
+                try:
+                    message = await offer_channel.fetch_message(message_id)
+                    if message is not None:
                         await message.delete()
-                    except TypeError:
-                        continue
+                except TypeError:
+                    continue
                 db.delete_data("offers", {"offer_id": offer_id})
                 offer_count = db.get_data("users", {"user_id": user_id})[1]
                 db.update_data("users", "offers_count", offer_count - 1, {
@@ -86,16 +86,16 @@ async def automatic_delete(oneshot: bool = False) -> None:
             delta = end_date - current_date
             if delta.days <= 0:
                 vacation_channel = await bot.fetch_channel(vacation_channel_id)
-                if type(vacation_channel) is None:
+                if vacation_channel is None:
                     print(
                         "The vacation channel has not been found! Please check the config!")
                     return
-                message = await vacation_channel.fetch_message(message_id)
-                if type(message) is not None:
-                    try:
+                try:
+                    message = await vacation_channel.fetch_message(message_id)
+                    if message is not None:
                         await message.delete()
-                    except TypeError:
-                        continue
+                except TypeError:
+                    continue
                 db.delete_data("vacations", {"ID": id})
 
     await clean_offers(current_time)
