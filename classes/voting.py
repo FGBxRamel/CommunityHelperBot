@@ -83,12 +83,17 @@ class Voting():
         self._save()
         embed = await self._get_embed()
         message = await self.channel.fetch_message(self.message_id)
+        if message is None:
+            await self.delete()
+            return
         await message.edit(embed=embed)
 
     async def delete(self) -> None:
         """Deletes the voting from the database and the embed."""
         db.delete_data("votings", {"voting_id": self.id})
         message = await self.channel.fetch_message(self.message_id)
+        if message is None:
+            return
         try:
             await message.delete()
         except AttributeError:
@@ -96,6 +101,9 @@ class Voting():
 
     async def close(self) -> None:
         message = await self.channel.fetch_message(self.message_id)
+        if message is None:
+            await self.delete()
+            return
         try:
             tie = await self._is_tie()
         except AttributeError:
