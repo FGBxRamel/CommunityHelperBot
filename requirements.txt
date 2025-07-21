@@ -11,7 +11,7 @@ discord-typings==0.9.0
 emoji==2.14.1
 frozenlist==1.4.1
 idna==3.10
-jurigged==0.5.8
+jurigged==0.6.1
 multidict==6.1.0
 ovld==0.5.0
 sentry-sdk==2.20.0
