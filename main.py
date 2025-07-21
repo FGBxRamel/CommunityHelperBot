@@ -77,7 +77,7 @@ async def automatic_delete(oneshot: bool = False) -> None:
             if voting.deadline <= int(current_time):
                 await voting.close()
 
-    async def clean_vactions(current_time):
+    async def clean_vactions():
         vacations = db.get_data(
             "vacations", attribute="ID, end_date, message_id", fetch_all=True)
         for id, end_date, message_id in vacations:
