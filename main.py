@@ -1,13 +1,14 @@
 import asyncio
 import configparser as cp
-from functools import partial
 import pkgutil
-from time import mktime, strftime, strptime, time
 from datetime import date
-import classes.database as db
-from classes.voting import Voting
+from functools import partial
+from time import mktime, strftime, strptime, time
 
 import interactions as i
+
+import classes.database as db
+from classes.voting import Voting
 
 db.setup()
 
@@ -45,42 +46,61 @@ votings_timer_started: set = set()
 async def automatic_delete(oneshot: bool = False) -> None:
     if not oneshot:
         asyncio.get_running_loop().call_later(86400, run_delete)
-    offer_channel: i.GuildText = await bot.fetch_channel(offer_channel_id)
     current_time = time()
-    offers = db.get_data(
-        "offers", attribute="deadline, message_id, offer_id, user_id", fetch_all=True)
-    for deadline, message_id, offer_id, user_id in offers:
-        if deadline <= current_time:
-            message = await offer_channel.fetch_message(message_id)
-            try:
-                await message.delete()
-            except TypeError:
-                continue
-            db.delete_data("offers", {"offer_id": offer_id})
-            offer_count = db.get_data("users", {"user_id": user_id})[1]
-            db.update_data("users", "offers_count", offer_count - 1, {
-                "user_id": user_id})
-    votings = db.get_data(
-        "votings", attribute="voting_id", fetch_all=True)
-    for voting_data in votings:
-        voting_id = voting_data[0]
-        voting = Voting(voting_id, bot)
-        if voting.deadline <= int(current_time):
-            await voting.close()
-    vacations = db.get_data(
-        "vacations", attribute="ID, end_date, message_id", fetch_all=True)
-    for id, end_date, message_id in vacations:
-        current_date = date.today()
-        end_date = date.fromtimestamp(end_date)
-        delta = end_date - current_date
-        if delta.days <= 0:
-            vacation_channel = await bot.fetch_channel(vacation_channel_id)
-            message = await vacation_channel.fetch_message(message_id)
-            try:
-                await message.delete()
-            except TypeError:
-                continue
-            db.delete_data("vacations", {"ID": id})
+
+    async def clean_offers(current_time):
+        offer_channel: i.GuildText = await bot.fetch_channel(offer_channel_id)
+        if type(offer_channel) is None:
+            print("The offer channel has not been found! Please check the config!")
+            return
+        offers = db.get_data(
+            "offers", attribute="deadline, message_id, offer_id, user_id", fetch_all=True)
+        for deadline, message_id, offer_id, user_id in offers:
+            if deadline <= current_time:
+                message = await offer_channel.fetch_message(message_id)
+                if type(message) is not None:
+                    try:
+                        await message.delete()
+                    except TypeError:
+                        continue
+                db.delete_data("offers", {"offer_id": offer_id})
+                offer_count = db.get_data("users", {"user_id": user_id})[1]
+                db.update_data("users", "offers_count", offer_count - 1, {
+                    "user_id": user_id})
+
+    async def clean_votings(current_time):
+        votings = db.get_data(
+            "votings", attribute="voting_id", fetch_all=True)
+        for voting_data in votings:
+            voting_id = voting_data[0]
+            voting = Voting(voting_id, bot)
+            if voting.deadline <= int(current_time):
+                await voting.close()
+
+    async def clean_vactions():
+        vacations = db.get_data(
+            "vacations", attribute="ID, end_date, message_id", fetch_all=True)
+        for id, end_date, message_id in vacations:
+            current_date = date.today()
+            end_date = date.fromtimestamp(end_date)
+            delta = end_date - current_date
+            if delta.days <= 0:
+                vacation_channel = await bot.fetch_channel(vacation_channel_id)
+                if type(vacation_channel) is None:
+                    print(
+                        "The vacation channel has not been found! Please check the config!")
+                    return
+                message = await vacation_channel.fetch_message(message_id)
+                if type(message) is not None:
+                    try:
+                        await message.delete()
+                    except TypeError:
+                        continue
+                db.delete_data("vacations", {"ID": id})
+
+    await clean_offers(current_time)
+    await clean_votings(current_time)
+    await clean_vactions()
 
 
 def run_delete(oneshot: bool = False):
