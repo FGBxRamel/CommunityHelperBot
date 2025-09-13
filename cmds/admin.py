@@ -1,11 +1,12 @@
 import configparser as cp
 import pkgutil
-from random import randint
-import classes.database as db
-from classes.shop import Shop
 import sqlite3 as sql
+from random import randint
 
 import interactions as i
+
+import classes.database as db
+from classes.shop import Shop
 
 scope_ids = []
 
@@ -252,7 +253,7 @@ class AdminCommand(i.Extension):
             for menu in menus:
                 await ctx.send(components=menu, ephemeral=True, delete_after=25, silent=True)
 
-    @ i.component_callback("shop_approve_id_select")
+    @i.component_callback("shop_approve_id_select")
     async def shop_approve_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
@@ -260,19 +261,19 @@ class AdminCommand(i.Extension):
             await shop.approve()
         await ctx.send("Shop(s) genehmigt.", ephemeral=True, delete_after=5)
 
-    @ i.component_callback("shop_approve_id_select_0")
+    @i.component_callback("shop_approve_id_select_0")
     async def shop_approve_id_select_0(self, ctx: i.ComponentContext):
         await self.shop_approve_id_select(ctx)
 
-    @ i.component_callback("shop_approve_id_select_1")
+    @i.component_callback("shop_approve_id_select_1")
     async def shop_approve_id_select_1(self, ctx: i.ComponentContext):
         await self.shop_approve_id_select(ctx)
 
-    @ i.component_callback("shop_approve_id_select_2")
+    @i.component_callback("shop_approve_id_select_2")
     async def shop_approve_id_select_2(self, ctx: i.ComponentContext):
         await self.shop_approve_id_select(ctx)
 
-    @ i.component_callback("shop_deny_id_select")
+    @i.component_callback("shop_deny_id_select")
     async def shop_deny_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
@@ -280,15 +281,15 @@ class AdminCommand(i.Extension):
             await shop.deny()
         await ctx.send("Shop(s) abgelehnt.", ephemeral=True, delete_after=5)
 
-    @ i.component_callback("shop_deny_id_select_0")
+    @i.component_callback("shop_deny_id_select_0")
     async def shop_deny_id_select_0(self, ctx: i.ComponentContext):
         await self.shop_deny_id_select(ctx)
 
-    @ i.component_callback("shop_deny_id_select_1")
+    @i.component_callback("shop_deny_id_select_1")
     async def shop_deny_id_select_1(self, ctx: i.ComponentContext):
         await self.shop_deny_id_select(ctx)
 
-    @ i.component_callback("shop_deny_id_select_2")
+    @i.component_callback("shop_deny_id_select_2")
     async def shop_deny_id_select_2(self, ctx: i.ComponentContext):
         await self.shop_deny_id_select(ctx)
 
@@ -384,15 +385,15 @@ class AdminCommand(i.Extension):
         )
         await ctx.send_modal(shop_edit_modal)
 
-    @ i.component_callback("admin_shop_edit_id_select_0")
+    @i.component_callback("admin_shop_edit_id_select_0")
     async def shop_edit_id_select_0(self, ctx: i.ComponentContext):
         await self.shop_edit_id_select(ctx)
 
-    @ i.component_callback("admin_shop_edit_id_select_1")
+    @i.component_callback("admin_shop_edit_id_select_1")
     async def shop_edit_id_select_1(self, ctx: i.ComponentContext):
         await self.shop_edit_id_select(ctx)
 
-    @ i.component_callback("admin_shop_edit_id_select_2")
+    @i.component_callback("admin_shop_edit_id_select_2")
     async def shop_edit_id_select_2(self, ctx: i.ComponentContext):
         await self.shop_edit_id_select(ctx)
 
