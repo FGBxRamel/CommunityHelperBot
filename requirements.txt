@@ -18,7 +18,7 @@ multidict==6.6.4
 ovld==0.5.13
 propcache==0.3.2
 python-dateutil==2.9.0.post0
-sentry-sdk==2.35.0
+sentry-sdk==2.37.1
 pytz==2025.2
 six==1.17.0
 tomli==2.2.1
