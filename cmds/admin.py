@@ -1,12 +1,13 @@
 import configparser as cp
 import pkgutil
-from random import randint
-import classes.database as db
-from classes.shop import Shop
-import sqlite3 as sql
 import re
+import sqlite3 as sql
+from random import randint
 
 import interactions as i
+
+import classes.database as db
+from classes.shop import Shop
 
 scope_ids = []
 approve_menu_callback_id = re.compile(r"shop_approve_id_select_\d+")
@@ -16,6 +17,7 @@ edit_menu_callback_id = re.compile(r"admin_shop_edit_id_select_\d+")
 owner_select_menu_callback_id = re.compile(r"admin_shop_owner_select_shop_\d+")
 obligatory_menu_callback_id = re.compile(r"shop_obligatory_id_select_\d+")
 voluntary_menu_callback_id = re.compile(r"shop_voluntary_id_select_\d+")
+
 
 class AdminCommand(i.Extension):
     def __init__(self, client) -> None:
