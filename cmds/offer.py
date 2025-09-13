@@ -98,6 +98,12 @@ class OfferCommand(i.Extension):
                     custom_id="deadline",
                     required=True,
                     max_length=1
+                ),
+                i.InputText(
+                    style=i.TextStyles.SHORT,
+                    label="Bild URL",
+                    custom_id="image_url",
+                    required=False
                 )
             ]
             create_modal = i.Modal(
@@ -150,7 +156,7 @@ class OfferCommand(i.Extension):
             await ctx.send("Wähle das Angebot aus, das du bearbeiten möchtest.", components=edit_selectmenu, ephemeral=True)
 
     @i.modal_callback("mod_create_offer")
-    async def create_offer_respone(self, ctx: i.SlashContext, title: str, price: str, text: str, deadline: str):
+    async def create_offer_respone(self, ctx: i.SlashContext, title: str, price: str, text: str, deadline: str, image_url: str = None):
         identifier_list = self.get_identifiers()
         identifier = randint(1000, 9999)
         while identifier in identifier_list:
@@ -164,13 +170,16 @@ class OfferCommand(i.Extension):
         numeric_end_time = time() + int(deadline) * 86400
         end_time = strftime("%d.%m.") + "- " + \
             strftime("%d.%m.", localtime(numeric_end_time))
+
         app_embed = i.Embed(
             title=title,
             description=f"\n{text}\n\n**Preis:** {price}",
             color=0xdaa520,
             author=i.EmbedAuthor(
                 name=f"{ctx.user.username}, {end_time} ({deadline} Tage)"),
-            footer=i.EmbedFooter(text=str(identifier))
+            footer=i.EmbedFooter(text=str(identifier)),
+            images=[i.EmbedAttachment(url=image_url)
+                    ] if image_url is not None else None
         )
         channel = ctx.channel
         server: i.Guild = ctx.guild
