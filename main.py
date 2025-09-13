@@ -30,11 +30,11 @@ scope_ids = SERVER_IDS
 run = False
 
 # NOTE Wichtel feature won't be supported anymore; it's there (docs folder), but without support
-bot.load_extension("interactions.ext.sentry",
-                   token=config.get("Sentry", "dsn"),
-                   environment=config.get(
-                       "Sentry", "environment", fallback="production")
-                   )
+# bot.load_extension("interactions.ext.sentry",
+#                    token=config.get("Sentry", "dsn"),
+#                    environment=config.get(
+#                        "Sentry", "environment", fallback="production")
+#                    )
 bot.load_extension("interactions.ext.jurigged")
 extension_names = [m.name for m in pkgutil.iter_modules(
     ["cmds"], prefix="cmds.")]

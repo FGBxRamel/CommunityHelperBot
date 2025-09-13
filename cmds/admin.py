@@ -1,13 +1,22 @@
 import configparser as cp
 import pkgutil
-from random import randint
-import classes.database as db
-from classes.shop import Shop
+import re
 import sqlite3 as sql
+from random import randint
 
 import interactions as i
 
+import classes.database as db
+from classes.shop import Shop
+
 scope_ids = []
+approve_menu_callback_id = re.compile(r"shop_approve_id_select_\d+")
+delete_menu_callback_id = re.compile(r"shop_delete_id_select_\d+")
+deny_menu_callback_id = re.compile(r"shop_deny_id_select_\d+")
+edit_menu_callback_id = re.compile(r"admin_shop_edit_id_select_\d+")
+owner_select_menu_callback_id = re.compile(r"admin_shop_owner_select_shop_\d+")
+obligatory_menu_callback_id = re.compile(r"shop_obligatory_id_select_\d+")
+voluntary_menu_callback_id = re.compile(r"shop_voluntary_id_select_\d+")
 
 
 class AdminCommand(i.Extension):
@@ -61,6 +70,7 @@ class AdminCommand(i.Extension):
                     i.SlashCommandChoice(name="ablehnen", value="deny"),
                     i.SlashCommandChoice(name="erstellen", value="create"),
                     i.SlashCommandChoice(name="bearbeiten", value="edit"),
+                    i.SlashCommandChoice(name="löschen", value="delete"),
                     i.SlashCommandChoice(name="besitzer", value="owner"),
                     i.SlashCommandChoice(name="pflicht", value="obligatory"),
                     i.SlashCommandChoice(name="freiwillig", value="voluntary")
@@ -175,6 +185,30 @@ class AdminCommand(i.Extension):
                 )
             for menu in menus:
                 await ctx.send(components=menu, ephemeral=True, delete_after=25, silent=True)
+        elif aktion == "delete":
+            options = []
+            shops = db.get_data("shops", fetch_all=True,
+                                attribute="shop_id, name")
+            if shops == []:
+                await ctx.send("Es gibt keine Shops.", ephemeral=True, delete_after=5)
+                return
+            for shop_id, name in shops:
+                options.append(i.StringSelectOption(
+                    label=shop_id,
+                    description=name,
+                    value=shop_id
+                ))
+                menus = []
+            for j in range(0, len(options) // 25 + 1):
+                menus.append(
+                    i.StringSelectMenu(
+                        custom_id=f"shop_delete_id_select_{j}",
+                        placeholder="Shop-ID",
+                        *options[j*25:(j+1)*25]
+                    )
+                )
+            for menu in menus:
+                await ctx.send(components=menu, ephemeral=True, delete_after=60, silent=True)
         elif aktion == "owner":
             shops = db.get_data("shops", fetch_all=True,
                                 attribute="shop_id, name")
@@ -252,7 +286,7 @@ class AdminCommand(i.Extension):
             for menu in menus:
                 await ctx.send(components=menu, ephemeral=True, delete_after=25, silent=True)
 
-    @ i.component_callback("shop_approve_id_select")
+    @i.component_callback(approve_menu_callback_id)
     async def shop_approve_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
@@ -260,37 +294,21 @@ class AdminCommand(i.Extension):
             await shop.approve()
         await ctx.send("Shop(s) genehmigt.", ephemeral=True, delete_after=5)
 
-    @ i.component_callback("shop_approve_id_select_0")
-    async def shop_approve_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_approve_id_select(ctx)
+    @i.component_callback(delete_menu_callback_id)
+    async def shop_delete_id_select(self, ctx: i.ComponentContext):
+        await ctx.defer(ephemeral=True)
+        for shop_id in ctx.values:
+            shop = Shop(shop_id, self.client, ctx.channel)
+            await shop.delete()
+        await ctx.send("Shop(s) gelöscht.", ephemeral=True, delete_after=5)
 
-    @ i.component_callback("shop_approve_id_select_1")
-    async def shop_approve_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_approve_id_select(ctx)
-
-    @ i.component_callback("shop_approve_id_select_2")
-    async def shop_approve_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_approve_id_select(ctx)
-
-    @ i.component_callback("shop_deny_id_select")
+    @i.component_callback(deny_menu_callback_id)
     async def shop_deny_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
             shop = Shop(shop_id, self.client, ctx.channel)
             await shop.deny()
         await ctx.send("Shop(s) abgelehnt.", ephemeral=True, delete_after=5)
-
-    @ i.component_callback("shop_deny_id_select_0")
-    async def shop_deny_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_deny_id_select(ctx)
-
-    @ i.component_callback("shop_deny_id_select_1")
-    async def shop_deny_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_deny_id_select(ctx)
-
-    @ i.component_callback("shop_deny_id_select_2")
-    async def shop_deny_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_deny_id_select(ctx)
 
     @i.component_callback("admin_shop_owner_select")
     async def shop_owner_select(self, ctx: i.ComponentContext):
@@ -347,7 +365,7 @@ class AdminCommand(i.Extension):
         )
         await ctx.send(components=[user_select], ephemeral=True, delete_after=30)
 
-    @i.component_callback("admin_shop_edit_id_select")
+    @i.component_callback(edit_menu_callback_id)
     async def shop_edit_id_select(self, ctx: i.ComponentContext):
         self.transfer_data[int(ctx.author.id)] = ctx.values[0]
         shop = Shop(ctx.values[0], self.client, ctx.channel)
@@ -384,18 +402,6 @@ class AdminCommand(i.Extension):
         )
         await ctx.send_modal(shop_edit_modal)
 
-    @ i.component_callback("admin_shop_edit_id_select_0")
-    async def shop_edit_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
-
-    @ i.component_callback("admin_shop_edit_id_select_1")
-    async def shop_edit_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
-
-    @ i.component_callback("admin_shop_edit_id_select_2")
-    async def shop_edit_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
-
     @i.modal_callback("admin_shop_edit")
     async def admin_shop_edit(self, ctx: i.ModalContext, name: str, offer: str,
                               location: str):
@@ -407,7 +413,7 @@ class AdminCommand(i.Extension):
         await shop.update()
         await ctx.send("Shop bearbeitet.", ephemeral=True, delete_after=10)
 
-    @i.component_callback("admin_shop_owner_select_shop")
+    @i.component_callback(owner_select_menu_callback_id)
     async def admin_shop_owner_select_shop(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         self.transfer_data[int(ctx.author.id)] = ctx.values[0]
@@ -418,18 +424,6 @@ class AdminCommand(i.Extension):
             max_values=25
         )
         await ctx.send(components=[user_select], ephemeral=True, delete_after=20)
-
-    @i.component_callback("admin_shop_owner_select_shop_0")
-    async def admin_shop_owner_select_shop_0(self, ctx: i.ComponentContext):
-        await self.admin_shop_owner_select_shop(ctx)
-
-    @i.component_callback("admin_shop_owner_select_shop_1")
-    async def admin_shop_owner_select_shop_1(self, ctx: i.ComponentContext):
-        await self.admin_shop_owner_select_shop(ctx)
-
-    @i.component_callback("admin_shop_owner_select_shop_2")
-    async def admin_shop_owner_select_shop_2(self, ctx: i.ComponentContext):
-        await self.admin_shop_owner_select_shop(ctx)
 
     @i.component_callback("admin_shop_change_owner_select")
     async def admin_shop_owner_select(self, ctx: i.ComponentContext):
@@ -443,7 +437,7 @@ class AdminCommand(i.Extension):
         await shop.update()
         await ctx.send("Besitzer geändert.", ephemeral=True, delete_after=5)
 
-    @i.component_callback("shop_obligatory_id_select")
+    @i.component_callback(obligatory_menu_callback_id)
     async def shop_obligatory_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
@@ -452,19 +446,7 @@ class AdminCommand(i.Extension):
             await shop.update()
         await ctx.send("Die Shops haben nun eine Kaufplicht.", ephemeral=True, delete_after=5)
 
-    @i.component_callback("shop_obligatory_id_select_0")
-    async def shop_obligatory_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_obligatory_id_select(ctx)
-
-    @i.component_callback("shop_obligatory_id_select_1")
-    async def shop_obligatory_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_obligatory_id_select(ctx)
-
-    @i.component_callback("shop_obligatory_id_select_2")
-    async def shop_obligatory_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_obligatory_id_select(ctx)
-
-    @i.component_callback("shop_voluntary_id_select")
+    @i.component_callback(voluntary_menu_callback_id)
     async def shop_voluntary_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
         for shop_id in ctx.values:
@@ -472,18 +454,6 @@ class AdminCommand(i.Extension):
             shop.obligatory = False
             await shop.update()
         await ctx.send("Die Shops sind nun freiwillig.", ephemeral=True, delete_after=5)
-
-    @i.component_callback("shop_voluntary_id_select_0")
-    async def shop_voluntary_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_voluntary_id_select(ctx)
-
-    @i.component_callback("shop_voluntary_id_select_1")
-    async def shop_voluntary_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_voluntary_id_select(ctx)
-
-    @i.component_callback("shop_voluntary_id_select_2")
-    async def shop_voluntary_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_voluntary_id_select(ctx)
 
     @admin_base.subcommand(
         sub_cmd_name="config",
