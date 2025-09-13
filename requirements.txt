@@ -15,7 +15,7 @@ frozenlist==1.7.0
 idna==3.10
 jurigged==0.6.1
 multidict==6.1.0
-ovld==0.5.12
+ovld==0.5.13
 propcache==0.3.2
 python-dateutil==2.9.0.post0
 sentry-sdk==2.35.0
