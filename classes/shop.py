@@ -17,7 +17,6 @@ class Shop():
         approved: bool = False,
         message_id: int = None,
         owners: list[str | int] | str | int = None,
-        obligatory: bool = False,
         skip_setup: bool = False
     ) -> None:
         """
@@ -37,7 +36,6 @@ class Shop():
             self.owners = [owners]
         elif type(owners) is list:
             self.owners = [int(owner) for owner in owners]
-        self.obligatory = bool(obligatory)
 
         self._refresh_config()
         if not skip_setup:
@@ -59,10 +57,10 @@ class Shop():
         # I know recreating is not the best option, but sufficient for this case.
         db.delete_data("shops", {"shop_id": self.id})
         db.save_data("shops", "name, offer, location, category, approved,\
-                     message_id, owners, shop_id, obligatory",
+                     message_id, owners, shop_id",
                      (self.name, self.offer, self.location, self.category,
                       self.approved, self.message_id,
-                      ",".join([str(owner) for owner in self.owners]), self.id, self.obligatory))
+                      ",".join([str(owner) for owner in self.owners]), self.id))
         message = await self.channel.fetch_message(self.message_id)
         embed = await self._get_embed()
         await message.edit(embed=embed)
@@ -82,9 +80,9 @@ class Shop():
         message = await self.channel.send(embed=embed)
         self.message_id = int(message.id)
         try:
-            db.save_data("shops", "shop_id, name, offer, location, category, approved, message_id, owners, obligatory",
+            db.save_data("shops", "shop_id, name, offer, location, category, approved, message_id, owners",
                          (self.id, self.name, self.offer, self.location, self.category, self.approved,
-                          self.message_id, ",".join([str(owner) for owner in self.owners]), self.obligatory))
+                          self.message_id, ",".join([str(owner) for owner in self.owners])))
         except IntegrityError:
             await message.delete()
             raise ValueError("Shop already exists.")
@@ -148,7 +146,6 @@ class Shop():
         self.approved = bool(shop[4])
         self.message_id = int(shop[5])
         self.owners = [int(owner) for owner in shop[6].split(",")]
-        self.obligatory = bool(shop[7])
         return True
 
     async def _get_embed(self) -> i.Embed:
@@ -178,11 +175,6 @@ class Shop():
         embed.add_field(
             name="Genehmigt",
             value=":white_check_mark:" if self.approved else ":x:",
-            inline=False
-        )
-        embed.add_field(
-            name="Kaufpflichtig",
-            value=":white_check_mark:" if self.obligatory else ":x:",
             inline=False
         )
         return embed
