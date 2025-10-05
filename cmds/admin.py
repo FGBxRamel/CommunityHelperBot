@@ -69,6 +69,7 @@ class AdminCommand(i.Extension):
                     i.SlashCommandChoice(name="bearbeiten", value="edit"),
                     i.SlashCommandChoice(name="löschen", value="delete"),
                     i.SlashCommandChoice(name="besitzer", value="owner"),
+                    i.SlashCommandChoice(name="aktualisieren", value="refresh"),
                 ]
             )
         ]
@@ -228,7 +229,14 @@ class AdminCommand(i.Extension):
                 )
             for menu in menus:
                 await ctx.send(components=menu, ephemeral=True, delete_after=25, silent=True)
-        
+        elif aktion == "refresh":
+            await ctx.defer(ephemeral=True)
+            shops = db.get_data("shops", fetch_all=True,
+                                attribute="shop_id")
+            for shop_id in shops:
+                Shop(shop_id, self.client, ctx.channel).update()
+            await ctx.send("Shops aktualisiert.", ephemeral=True, delete_after=5)
+
     @i.component_callback(approve_menu_callback_id)
     async def shop_approve_id_select(self, ctx: i.ComponentContext):
         await ctx.defer(ephemeral=True)
