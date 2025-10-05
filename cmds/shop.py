@@ -3,12 +3,15 @@ from random import randint
 import classes.database as db
 from classes.shop import Shop
 import sqlite3 as sql
+import re
 
 import interactions as i
 from interactions.ext.paginators import Paginator
 
 scope_ids = []
 
+shop_delete_select_id = re.compile(r"shop_delete_id_select_\d+")
+edit_menu_callback_id = re.compile(r"shop_edit_id_select_\d+")
 
 class ShopCommand(i.Extension):
     def __init__(self, client) -> None:
@@ -177,25 +180,13 @@ class ShopCommand(i.Extension):
             await ctx.send("Bitte wähle die Kategorien aus, nach denen du suchen möchtest:",
                            components=category_selectmenu, ephemeral=True, delete_after=15)
 
-    @ i.component_callback("shop_delete_id_select")
+    @ i.component_callback(shop_delete_select_id)
     async def shop_delete_id_select(self, ctx: i.ComponentContext):
         for shop_id in ctx.values:
             await Shop(int(shop_id), self.client, ctx.channel).delete()
         await ctx.send(content="Die Shops wurden gelöscht.", ephemeral=True, delete_after=5)
 
-    @ i.component_callback("shop_delete_id_select_0")
-    async def shop_delete_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_delete_id_select(ctx)
-
-    @ i.component_callback("shop_delete_id_select_1")
-    async def shop_delete_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_delete_id_select(ctx)
-
-    @ i.component_callback("shop_delete_id_select_2")
-    async def shop_delete_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_delete_id_select(ctx)
-
-    @ i.component_callback("shop_edit_id_select")
+    @ i.component_callback(edit_menu_callback_id)
     async def shop_edit_id_select(self, ctx: i.ComponentContext):
         shop_id = ctx.values[0]
         shop = Shop(int(shop_id), self.client, ctx.channel)
@@ -239,18 +230,6 @@ class ShopCommand(i.Extension):
             *components
         )
         await ctx.send_modal(shop_modal)
-
-    @ i.component_callback("shop_edit_id_select_0")
-    async def shop_edit_id_select_0(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
-
-    @ i.component_callback("shop_edit_id_select_1")
-    async def shop_edit_id_select_1(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
-
-    @ i.component_callback("shop_edit_id_select_2")
-    async def shop_edit_id_select_2(self, ctx: i.ComponentContext):
-        await self.shop_edit_id_select(ctx)
 
     @ i.modal_callback("shop_edit_modal")
     async def shop_edit_modal(self, ctx: i.ComponentContext, id: str, name: str, offer: str, location: str):
