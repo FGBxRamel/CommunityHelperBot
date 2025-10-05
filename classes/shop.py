@@ -57,10 +57,10 @@ class Shop():
         # I know recreating is not the best option, but sufficient for this case.
         db.delete_data("shops", {"shop_id": self.id})
         db.save_data("shops", "name, offer, location, category, approved,\
-                     message_id, owners, shop_id",
+                     message_id, owners, shop_id, obligatory",
                      (self.name, self.offer, self.location, self.category,
                       self.approved, self.message_id,
-                      ",".join([str(owner) for owner in self.owners]), self.id))
+                      ",".join([str(owner) for owner in self.owners]), self.id, False))
         message = await self.channel.fetch_message(self.message_id)
         embed = await self._get_embed()
         await message.edit(embed=embed)
@@ -80,9 +80,9 @@ class Shop():
         message = await self.channel.send(embed=embed)
         self.message_id = int(message.id)
         try:
-            db.save_data("shops", "shop_id, name, offer, location, category, approved, message_id, owners",
+            db.save_data("shops", "shop_id, name, offer, location, category, approved, message_id, owners, obligatory",
                          (self.id, self.name, self.offer, self.location, self.category, self.approved,
-                          self.message_id, ",".join([str(owner) for owner in self.owners])))
+                          self.message_id, ",".join([str(owner) for owner in self.owners]), False))
         except IntegrityError:
             await message.delete()
             raise ValueError("Shop already exists.")
