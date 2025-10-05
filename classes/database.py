@@ -20,7 +20,7 @@ def setup(file: str = "data.db"):
                   FOREIGN KEY(user_id) REFERENCES users(user_id))")
         c.execute("CREATE TABLE IF NOT EXISTS shops (shop_id INTEGER PRIMARY KEY,\
                   owners TEXT, name TEXT, offer TEXT, location TEXT,\
-                  category TEXT, approved BOOLEAN, message_id BIGINT, obligatory BOOLEAN)")
+                  category TEXT, approved BOOLEAN, message_id BIGINT)")
         c.execute("CREATE TABLE IF NOT EXISTS vacations (ID INTEGER PRIMARY KEY,\
                   user_id BIGINT, start_date BIGINT, end_date BIGINT, reason TEXT,\
                   issuer BIGINT, message_id BIGINT)")
@@ -105,7 +105,7 @@ def update_data(table: str, attribute: str, value, conditions: dict) -> None:
 def get_shop_data(id: int):
     return get_data("shops", {"shop_id": id},
                     attribute="name, offer, location, category,\
-                        approved, message_id, owners, obligatory")
+                        approved, message_id, owners")
 
 
 def increase_shop_count(user_id: int) -> None:
