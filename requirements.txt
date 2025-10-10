@@ -16,7 +16,7 @@ idna==3.10
 jurigged==0.6.1
 multidict==6.6.4
 ovld==0.5.13
-propcache==0.3.2
+propcache==0.4.1
 python-dateutil==2.9.0.post0
 sentry-sdk==2.39.0
 pytz==2025.2
