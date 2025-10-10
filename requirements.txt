@@ -14,7 +14,7 @@ emoji==2.15.0
 frozenlist==1.8.0
 idna==3.10
 jurigged==0.6.1
-multidict==6.6.4
+multidict==6.7.0
 ovld==0.5.13
 propcache==0.4.1
 python-dateutil==2.9.0.post0
